@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Empleados</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    table, th, td { border: 2px solid #327fd8; border-collapse: collapse; padding: 5px; }
+    td { min-width: 100px; }
+  </style>
+  
+</head>
+<body>
+  <h2>Agregar Empleado</h2>
+  <div><a href="index.html">INICIO</a>  </div>
+  <h3>Cargar archivo Excel</h3>
+<input type="file" id="fileInput" accept=".xlsx">
+
+<h3>Selecciona las columnas a visualizar</h3>
+<div id="columnSelector"></div>
+
+<button onclick="mostrarDatos()">Mostrar Datos</button>
+
+<h3>Registros Seleccionados</h3>
+<table border="1">
+  <thead><tr id="tablaHead"></tr></thead>
+  <tbody id="tablaBody"></tbody>
+</table>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="funciones_form_add_persona.js"></script>
+
+  
+</body>
+</html>

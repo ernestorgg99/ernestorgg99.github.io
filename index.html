@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Control de Horas extras</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+<h2>Gestion de Empleados</h2>
+  <a href="formulario_agregar_persona.html">Lista de Empleados</a>
+  
+  <h2>Sube los datos del biometrico</h2>
+  <input type="file" id="fileInput" multiple />
+  <div id="hojasContainer"></div>
+  <div style="margin-bottom: 20px;">
+
+    <label for="fechaDesde">Desde:</label>
+<input type="date" id="fechaDesde">
+
+<label for="fechaHasta">Hasta:</label>
+<input type="date" id="fechaHasta">
+<button onclick="filtrarPorRango()">Filtrar</button>
+<button onclick="agruparTabla()">Agrupar</button>
+<button onclick="exportarxlsx()"> ⬇ Exportar</button>
+<button onclick="window.location.href='index.html'">Limpiar</button>
+  <div id="previewContainer"></div>
+  
+  <div style="text-align: right; margin-bottom: 10px;">
+</div>
+
+
+  <script src="funciones.js"> </script>
+</body>
+</html>
