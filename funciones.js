@@ -29,28 +29,15 @@ if (workbook.SheetNames[hojaObjetivoIndex]) {
   alert("No se encontró la hoja esperada. Revisa que el archivo tenga suficientes hojas.");
 }
 
-    
-    //Finalmente, muestras los botones de todas las hojas como antes
    //  mostrarSelectorHojas();  (esta funcion despliega una la lista de hojas para seleccionarlas)
   };
   
   reader.readAsArrayBuffer(e.target.files[0]);
 });
 
-function mostrarSelectorHojas() {
-  const contenedor = document.getElementById('hojasContainer');
-  contenedor.innerHTML = '<h3>Selecciona una hoja para editar:</h3>';
-  workbook.SheetNames.forEach(nombre => {
-    contenedor.innerHTML += `
-      <button onclick="previsualizarHoja('${nombre}')">${nombre}</button>
-    `;
-  });
-}
 
 
-
-
-//prueba detectoar campo
+//prueba detectar campo
 function detectarYFormatearFecha(celda) {
   if (typeof celda !== 'string') return celda;
 
@@ -275,17 +262,6 @@ datos = datos.map(fila => {
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
  //recuperar la tabla desde la base en local storage
  const base = JSON.parse(localStorage.getItem('datosSeleccionados'));
 const columnasBase = base?.columnas || [];
@@ -336,7 +312,10 @@ contenedor.innerHTML = html;
 }
 
 //funcion filtrar por rango
-
+// Antes de aplicar el nuevo filtro, mostrar todas las filas
+document.querySelectorAll('#previewContainer table tr').forEach(fila => {
+  fila.style.display = '';
+});
 
 function filtrarPorRango() {
   const desdeStr = document.getElementById('fechaDesde').value;
@@ -345,7 +324,7 @@ const hastaStr = document.getElementById('fechaHasta').value;
 const desdeDate = new Date(desdeStr);
 const hastaDate = new Date(hastaStr);
 
-// ⬇️ INSERTA AQUÍ
+//  INSERTA AQUÍ
 const diffMs = hastaDate - desdeDate;
 const diffDays = diffMs / (1000 * 60 * 60 * 24) + 1;
 
@@ -408,17 +387,40 @@ function mostrarMensaje(mensaje) {
   });
 }
 
-
+//construir fecha local
+function construirFechaLocal(dateStr) {
+  const [año, mes, día] = dateStr.split('-');
+  return new Date(parseInt(año), parseInt(mes) - 1, parseInt(día));
+}
 
 // agrupar a formato final
-function agruparTabla() {
-  const desdeStr = document.getElementById('fechaDesde').value;
-  const hastaStr = document.getElementById('fechaHasta').value;
+ function agruparTabla() {
+ const desdeStr = document.getElementById('fechaDesde').value;
+const hastaStr = document.getElementById('fechaHasta').value;
+
+const desdeObj = construirFechaLocal(desdeStr);
+const hastaObj = construirFechaLocal(hastaStr);
 
   if (!desdeStr || !hastaStr) {
     alert("Por favor selecciona ambas fechas.");
     return;
   }
+
+  // Convertir al formato deseado con hora fija
+  function formatearFechaHora(fechaObj, horaStr) {
+  const yyyy = fechaObj.getFullYear();
+  const mm = String(fechaObj.getMonth() + 1).padStart(2, '0');
+  const dd = String(fechaObj.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd} ${horaStr}`;
+}
+
+const desdeFinal = formatearFechaHora(desdeObj, '17:00:00');
+const hastaFinal = formatearFechaHora(desdeObj, '23:59:00');
+
+
+
+
+
 
   const filasDOM = document.querySelectorAll('#previewContainer table tr');
   const agrupados = {};
@@ -458,25 +460,36 @@ function agruparTabla() {
     let horas = Math.floor(totalMin / 60);
 let minutos = totalMin % 60;
 
-// ✅ Limitar a 09:30 si supera las 10:00
+// Limitar a 09:30 si supera las 10:00
 if (horas > 10 || (horas === 10 && minutos > 0)) {
   horas = 9;
   minutos = 30;
 }
+const duracion = (horas + minutos / 60).toFixed(2);// esta convierte a decimales las horas extras
 
-const duracion = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
+
+
+
+//const duracion = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`; // <-este comentario hace que la duracion este en formato HH:MM
+
+
+
+
+
+
+
     const nombre = filas[0][9]?.innerText.trim() ?? ''; // índice 9: Nombre
     const empleado = filas[0][8]?.innerText.trim() ?? ''; // índice 8: Empleado
 
     resultado.push([
-      desdeStr,
-      hastaStr,
-      duracion,
-      'Borrador',
-      `Horas extras diurnas: ${empleado}`,
-      'Horas extras diurnas',
-      empleado
-    ]);
+  desdeFinal,    // Columna "Desde"
+  hastaFinal,    // Columna "A"
+  duracion,
+  'Borrador',
+  `Horas extras diurnas: ${empleado}`,
+  'Horas extras diurnas',
+  empleado
+]);
   });
 
   // Mostrar tabla final
@@ -497,6 +510,12 @@ const duracion = `${horas.toString().padStart(2, '0')}:${minutos.toString().padS
 }
 
 
+//- Detectar cambios automáticamente sin botón filtar
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('fechaDesde').addEventListener('change', filtrarPorRango);
+  document.getElementById('fechaHasta').addEventListener('change', filtrarPorRango);
+});
 
 
    
