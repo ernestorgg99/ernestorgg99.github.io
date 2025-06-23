@@ -8,7 +8,7 @@
   }
 
   h2 {
-    color: #2c3e50;
+    color: #000000;
     font-weight: 600;
     margin-bottom: 15px;
   }
@@ -20,7 +20,7 @@
     margin-bottom: 20px;
 
 
-    background-color: #7128f8;
+    background-color: #0078d4;
     color: rgb(255, 255, 255);
     border: none;
     padding: 9px 30px;
@@ -34,6 +34,10 @@
   label {
     margin-right: 8px;
     font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 20px;
+    margin-right: 0px;
+    font-size: 25px;
   }
 
   input[type="date"] {
@@ -41,7 +45,7 @@
     border: 1px solid #c90707;
     border-radius: 20px;
     margin-right: 15px;
-    font-size: 20px;
+    font-size: 25px;
   }
 
   button {
@@ -53,7 +57,7 @@
     font-size: 20px;
     margin-right: 10px;
     cursor: pointer;
-    transition: background-color 0.25s ease;
+    transition: background-color 0.20s ease;
   }
 
   button:hover {
@@ -66,11 +70,11 @@
   }
 
   #previewContainer {
-    background-color: white;
-    border-radius: 10px;
+    background-color: rgb(204, 203, 203);
+    border-radius: 30px;
     padding: 20px;
     margin-top: 25px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
   }
 
   table {
@@ -79,6 +83,7 @@
     margin-top: 12px;
     font-size: 14px;
     background-color: white;
+    border-radius: 20px;
   }
 
   th {
@@ -126,13 +131,13 @@
 
   body {
     font-family: 'Segoe UI', sans-serif;
-    background-color: #f0f4f8;
-    color: #333;
-    margin: 30px;
+    background-color: #ffffff;
+    color: #000000;
+    margin: 50px;
   }
 
   h2 {
-    color: #2a4365;
+    color: #000000;
     border-bottom: 2px solid #90cdf4;
     padding-bottom: 5px;
   }
@@ -149,8 +154,8 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    background-color: #ffffff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    background-color: #fdfdff;
+    box-shadow: 0 0 10px rgba(80, 39, 177, 0.05);
   }
 
   th {
@@ -169,16 +174,33 @@
     margin-top: 40px;
     color: #2b6cb0;
   }
-table { border-collapse: collapse; width: 100%; margin: 10px 0 30px; table-layout: fixed; }
-  th, td { border: 1px solid #888; padding: 6px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* Define anchos específicos para cada columna */
-  .col-desde                  { width: 120px; }
-  .col-a                      { width: 120px; }
-  .col-duracion              { width: 90px; }
-  .col-estado                 { width: 100px; }
-  .col-nombre                 { width: 300px; }
-  .col-tipo                   { width: 220px; }
-  .col-empleado               { width: 250px; }
 
-  thead { background: #007acc; color: white; }
+    th, td { border: 1px solid #999; padding: 6px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    thead { background: #007acc; color: white; }
+    .col-desde     { width: 120px; }
+    .col-a         { width: 120px; }
+    .col-duracion  { width: 80px; }
+    .col-estado    { width: 100px; }
+    .col-nombre    { width: 280px; }
+    .col-tipo      { width: 220px; }
+    .col-empleado  { width: 250px; }
+
+    /* Colores únicos para duplicados */
+    .dup-color-1 { background-color: #fff3cd; }
+    .dup-color-2 { background-color: #d4edda; }
+    .dup-color-3 { background-color: #d1ecf1; }
+    .dup-color-4 { background-color: #f8d7da; }
+    .dup-color-5 { background-color: #e2e3e5; }
+    .dup-color-6 { background-color: #fde2ff; }
+    .dup-color-7 { background-color: #e2f0cb; }
+    .dup-color-8 { background-color: #fce4b3; }
+
+
+    tbody{
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fdfdff;
+    box-shadow: 0 0 10px rgba(80, 39, 177, 0.05);
+  }

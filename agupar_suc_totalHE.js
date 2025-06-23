@@ -1,140 +1,158 @@
 const HEADERS = ["Desde", "A", "Duración", "Estado", "Nombre", "Tipo de entrada de trabajo", "Empleado"];
     const COLUMN_CLASSES = ["col-desde", "col-a", "col-duracion", "col-estado", "col-nombre", "col-tipo", "col-empleado"];
 
-    document.getElementById('input-multiple').addEventListener('change', function (e) {
-      const contenedor = document.getElementById('contenedor-tablas');
-      contenedor.innerHTML = '';
+    let datosPorArchivo = [];
+    let datosCombinados = [];
 
-      Array.from(e.target.files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          const data = new Uint8Array(event.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+    document.getElementById("input-multiple").addEventListener("change", async (e) => {
+      datosPorArchivo = [];
+      datosCombinados = [];
 
-          const tabla = document.createElement('table');
-          const thead = document.createElement('thead');
-          const trHead = document.createElement('tr');
+      const archivos = Array.from(e.target.files);
+      const resultados = await Promise.all(
+        archivos.map(file =>
+          new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+              const data = new Uint8Array(event.target.result);
+              const workbook = XLSX.read(data, { type: 'array' });
+              const sheet = workbook.Sheets[workbook.SheetNames[0]];
+              const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+              resolve({ nombreArchivo: file.name, filas: rows });
+            };
+            reader.readAsArrayBuffer(file);
+          })
+        )
+      );
 
-          HEADERS.forEach((header, i) => {
-            const th = document.createElement('th');
-            th.textContent = header;
-            th.classList.add(COLUMN_CLASSES[i]);
-            trHead.appendChild(th);
-          });
-          thead.appendChild(trHead);
-          tabla.appendChild(thead);
+      datosPorArchivo = resultados;
+      datosCombinados = resultados.flatMap(r => r.filas);
+      const mapaDuplicados = mapearDuplicadosConColores(datosCombinados);
+      mostrarPrevisualizacionPorArchivo(datosPorArchivo, mapaDuplicados);
+    });
 
-          const tbody = document.createElement('tbody');
-          rawRows.forEach(row => {
-            const tr = document.createElement('tr');
-            HEADERS.forEach((header, i) => {
-              const td = document.createElement('td');
-              td.textContent = row[header] ?? '';
-              td.classList.add(COLUMN_CLASSES[i]);
-              tr.appendChild(td);
-            });
-            tbody.appendChild(tr);
-          });
-          tabla.appendChild(tbody);
-
-          const titulo = document.createElement('h3');
-          titulo.textContent = `Archivo: ${file.name}`;
-          contenedor.appendChild(titulo);
-          contenedor.appendChild(tabla);
-        };
-        reader.readAsArrayBuffer(file);
+    function mapearDuplicadosConColores(data) {
+      const conteo = {};
+      data.forEach(row => {
+        const emp = row["Empleado"] || "";
+        conteo[emp] = (conteo[emp] || 0) + 1;
       });
+
+      const duplicados = Object.keys(conteo).filter(e => conteo[e] > 1);
+      const mapa = {};
+      duplicados.forEach((emp, i) => {
+        mapa[emp] = `dup-color-${(i % 8) + 1}`; // Hasta 8 colores
+      });
+      return mapa;
+    }
+
+    function mostrarPrevisualizacionPorArchivo(lista, mapaDuplicados) {
+  const contenedor = document.getElementById("contenedor-tablas");
+  contenedor.innerHTML = "";
+
+  lista.forEach(({ nombreArchivo, filas }) => {
+    const titulo = document.createElement("h3");
+    titulo.textContent = `Archivo: ${nombreArchivo}`;
+    contenedor.appendChild(titulo);
+
+    const tabla = document.createElement("table");
+    const thead = document.createElement("thead");
+    const trHead = document.createElement("tr");
+
+    HEADERS.forEach((h, i) => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      th.classList.add(COLUMN_CLASSES[i]);
+      trHead.appendChild(th);
     });
 
+    thead.appendChild(trHead);
+    tabla.appendChild(thead);
 
+    const tbody = document.createElement("tbody");
+    filas.forEach(row => {
+      const duracion = parseFloat(row["Duración"]) || 0;
+      if (duracion === 0) return;
 
+      const tr = document.createElement("tr");
+      const clase = mapaDuplicados[row["Empleado"]];
+      if (clase) tr.classList.add(clase);
 
-function agruparPorEmpleadoConDuracionMaxima(data) {
-  const resultado = {};
-  data.forEach(row => {
-    const empleado = row["Empleado"] || "";
-    const duracion = parseFloat(row["Duración"]) || 0;
+      HEADERS.forEach((h, i) => {
+        const td = document.createElement("td");
+        td.textContent = row[h] ?? "";
+        td.classList.add(COLUMN_CLASSES[i]);
+        tr.appendChild(td);
+      });
 
-    if (!resultado[empleado]) {
-      resultado[empleado] = { ...row, DuraciónSumada: duracion, DuraciónMaxima: duracion };
-    } else {
-      resultado[empleado].DuraciónSumada += duracion;
+      tbody.appendChild(tr);
+    });
 
-      if (duracion > resultado[empleado].DuraciónMaxima) {
-        resultado[empleado] = { ...row, DuraciónSumada: resultado[empleado].DuraciónSumada, DuraciónMaxima: duracion };
-      }
-    }
-  });
-
-  // Postprocesamiento: ajustar duración final a 9.30 si se pasa de 10
-  return Object.values(resultado).map(r => {
-    let total = r.DuraciónSumada;
-    r["Duración"] = total > 10 ? 9.30 : total.toFixed(2);
-    return r;
+    tabla.appendChild(tbody);
+    contenedor.appendChild(tabla);
   });
 }
 
+    function agruparPorEmpleado(data) {
+      const resultado = {};
+      data.forEach(row => {
+        const emp = row["Empleado"] || "";
+        const dur = parseFloat(row["Duración"]) || 0;
+        if (!resultado[emp]) {
+          resultado[emp] = { ...row, suma: dur, max: dur };
+        } else {
+          resultado[emp].suma += dur;
+          if (dur > resultado[emp].max) {
+            resultado[emp] = { ...row, suma: resultado[emp].suma, max: dur };
+          }
+        }
+      });
 
-
-let datosCombinados = [];
-
-Array.from(e.target.files).forEach((file, index, array) => {
-  const reader = new FileReader();
-  reader.onload = function (event) {
-    const data = new Uint8Array(event.target.result);
-    const workbook = XLSX.read(data, { type: 'array' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
-
-    datosCombinados = datosCombinados.concat(rows);
-
-    // Esperar hasta que todos los archivos se hayan procesado
-    if (index === array.length - 1) {
-      const agrupados = agruparPorEmpleadoConDuracionMaxima(datosCombinados);
-      pintarTablaUnica(agrupados);
+      return Object.values(resultado).map(r => {
+        const total = r.suma;
+        r["Duración"] = total > 10 ? 9.30 : total.toFixed(2);
+        return r;
+      });
     }
-  };
-  reader.readAsArrayBuffer(file);
-});
 
+    function agruparYMostrar() {
+      const agrupados = agruparPorEmpleado(datosCombinados);
+      const contenedor = document.getElementById("contenedor-tablas");
+      contenedor.innerHTML = "";
 
+      const titulo = document.createElement("h3");
+      titulo.textContent = "Tabla Agrupada por Empleado";
+      contenedor.appendChild(titulo);
 
+      const tabla = document.createElement("table");
+      const thead = document.createElement("thead");
+      const trHead = document.createElement("tr");
 
+      HEADERS.forEach((h, i) => {
+        const th = document.createElement("th");
+        th.textContent = h;
+        th.classList.add(COLUMN_CLASSES[i]);
+        trHead.appendChild(th);
+      });
 
+      thead.appendChild(trHead);
+      tabla.appendChild(thead);
 
+      const tbody = document.createElement("tbody");
+     agrupados.forEach(row => {
+  const duracion = parseFloat(row["Duración"]) || 0;
+  if (duracion === 0) return; // Filtrar duración cero
 
+  const tr = document.createElement("tr");
+        HEADERS.forEach((h, i) => {
+          const td = document.createElement("td");
+          td.textContent = row[h] ?? "";
+          td.classList.add(COLUMN_CLASSES[i]);
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
 
-
-function pintarTablaUnica(data) {
-  const contenedor = document.getElementById('contenedor-tablas');
-  contenedor.innerHTML = '';
-
-  const tabla = document.createElement('table');
-  const thead = document.createElement('thead');
-  const trHead = document.createElement('tr');
-  HEADERS.forEach((header, i) => {
-    const th = document.createElement('th');
-    th.textContent = header;
-    th.classList.add(COLUMN_CLASSES[i]);
-    trHead.appendChild(th);
-  });
-  thead.appendChild(trHead);
-  tabla.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
-  data.forEach(row => {
-    const tr = document.createElement('tr');
-    HEADERS.forEach((header, i) => {
-      const td = document.createElement('td');
-      td.textContent = row[header] ?? '';
-      td.classList.add(COLUMN_CLASSES[i]);
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
-
-  tabla.appendChild(tbody);
-  contenedor.appendChild(tabla);
-}
+      tabla.appendChild(tbody);
+      contenedor.appendChild(tabla);
+    }
