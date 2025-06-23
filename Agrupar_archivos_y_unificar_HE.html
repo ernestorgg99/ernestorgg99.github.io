@@ -3,7 +3,7 @@
 <head>
     <link rel="stylesheet" href="style.css">
   <meta charset="UTF-8">
-  <title>Visor de múltiples archivos Excel</title>
+  <title>Visor multiple</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
@@ -17,6 +17,7 @@
   <h2>Visualizador de múltiples archivos Excel</h2>
   <input type="file" id="input-multiple" accept=".xlsx" multiple />
   <button onclick="agruparYMostrar()">Agrupar por Empleado</button>
+  <button onclick="exportarTabla()">Exportar a Excel</button>
  <button onclick="window.location.href='Agrupar_archivos_y_unificar_HE.html'">Limpiar</button>
 
   <div id="contenedor-tablas"></div>

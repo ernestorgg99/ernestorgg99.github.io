@@ -156,3 +156,13 @@ const HEADERS = ["Desde", "A", "Duración", "Estado", "Nombre", "Tipo de entrada
       tabla.appendChild(tbody);
       contenedor.appendChild(tabla);
     }
+function exportarTabla() {
+  const tabla = document.querySelector("table");
+  if (!tabla) return alert("No hay tabla visible para exportar.");
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.table_to_sheet(tabla);
+  XLSX.utils.book_append_sheet(wb, ws, "Exportado");
+
+  XLSX.writeFile(wb, "exportado.xlsx");
+}
