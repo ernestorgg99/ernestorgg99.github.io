@@ -123,3 +123,62 @@
     cursor: pointer;
     
   }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f0f4f8;
+    color: #333;
+    margin: 30px;
+  }
+
+  h2 {
+    color: #2a4365;
+    border-bottom: 2px solid #90cdf4;
+    padding-bottom: 5px;
+  }
+
+  input[type="file"] {
+    padding: 10px;
+    border: 2px dashed #3182ce;
+    background-color: #ebf8ff;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  }
+
+  th {
+    background-color: #4299e1;
+    color: white;
+    padding: 8px;
+    text-align: left;
+  }
+
+  td {
+    padding: 8px;
+    border: 1px solid #cbd5e0;
+  }
+
+  h3 {
+    margin-top: 40px;
+    color: #2b6cb0;
+  }
+table { border-collapse: collapse; width: 100%; margin: 10px 0 30px; table-layout: fixed; }
+  th, td { border: 1px solid #888; padding: 6px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Define anchos específicos para cada columna */
+  .col-desde                  { width: 120px; }
+  .col-a                      { width: 120px; }
+  .col-duracion              { width: 90px; }
+  .col-estado                 { width: 100px; }
+  .col-nombre                 { width: 300px; }
+  .col-tipo                   { width: 220px; }
+  .col-empleado               { width: 250px; }
+
+  thead { background: #007acc; color: white; }

@@ -10,6 +10,12 @@
 <body>
 <h2>Gestion de Empleados</h2>
   <a href="formulario_agregar_persona.html">Lista de Empleados</a>
+  <div>
+    <h2>Agrupacion general para Odoo</h2>
+    <button onclick="window.location.href='Agrupar_archivos_y_unificar_HE.html'">Generar archivo Odoo</button>
+  </div>
+  
+  
   
   <h2>Sube los datos del biometrico</h2>
   <input type="file" id="fileInput" multiple />
@@ -21,18 +27,10 @@
 <input type="date" id="fechaDesde">
 <label for="fechaHasta">Hasta:</label>
 <input type="date" id="fechaHasta">
-
-
-
-
-
-
-<!-- <button onclick="filtrarPorRango()">Filtrar</button> boton filtrar -->
-
-
 <button onclick="agruparTabla()">Agrupar</button>
 <button onclick="exportarxlsx()"> ⬇ Exportar</button>
 <button onclick="window.location.href='index.html'">Limpiar</button>
+
   <div id="previewContainer"></div>
   
   <div style="text-align: right; margin-bottom: 10px;">
