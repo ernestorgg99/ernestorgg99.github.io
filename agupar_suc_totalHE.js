@@ -52,7 +52,7 @@ const HEADERS = ["Desde", "A", "Duración", "Estado", "Nombre", "Tipo de entrada
 
   lista.forEach(({ nombreArchivo, filas }) => {
     const titulo = document.createElement("h3");
-    titulo.textContent = `Archivo: ${nombreArchivo}`;
+    titulo.textContent = `${nombreArchivo}`;
     contenedor.appendChild(titulo);
 
     const tabla = document.createElement("table");
