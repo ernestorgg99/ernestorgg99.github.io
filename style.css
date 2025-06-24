@@ -239,7 +239,7 @@
   }
   
 
-  button, h2, a, table {
+  button, h2, a {
     display: none !important;
 
   }
