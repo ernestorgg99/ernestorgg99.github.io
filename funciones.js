@@ -414,8 +414,8 @@ const hastaObj = construirFechaLocal(hastaStr);
   return `${yyyy}-${mm}-${dd} ${horaStr}`;
 }
 
-const desdeFinal = formatearFechaHora(desdeObj, '17:00:00');
-const hastaFinal = formatearFechaHora(desdeObj, '23:59:00');
+const desdeFinal = formatearFechaHora(hastaObj, '17:01:00');
+const hastaFinal = formatearFechaHora(hastaObj, '23:59:00');
 
 
 

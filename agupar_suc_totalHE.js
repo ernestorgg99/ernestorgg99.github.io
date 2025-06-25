@@ -162,7 +162,7 @@ function exportarTabla() {
 
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.table_to_sheet(tabla);
-  XLSX.utils.book_append_sheet(wb, ws, "Exportado");
+  XLSX.utils.book_append_sheet(wb, ws, "HORAS_EXTRAS_ODOO");
 
   XLSX.writeFile(wb, "HORAS_EXTRAS_ODOO.xlsx");
 }
