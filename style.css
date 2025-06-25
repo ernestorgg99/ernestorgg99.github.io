@@ -176,25 +176,6 @@
   }
 
 
-    th, td { border: 1px solid #999; padding: 6px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    thead { background: #007acc; color: white; }
-    .col-desde     { width: 50px; }
-    .col-a         { width: 50px; }
-    .col-duracion  { width: 50px; }
-    .col-estado    { width: 50px; }
-    .col-nombre    { width: 50px; }
-    .col-tipo      { width: 50px; }
-    .col-empleado  { width: 50px; }
-
-    /* Colores únicos para duplicados */
-    .dup-color-1 { background-color: #fff3cd; }
-    .dup-color-2 { background-color: #d4edda; }
-    .dup-color-3 { background-color: #d1ecf1; }
-    .dup-color-4 { background-color: #f8d7da; }
-    .dup-color-5 { background-color: #e2e3e5; }
-    .dup-color-6 { background-color: #fde2ff; }
-    .dup-color-7 { background-color: #e2f0cb; }
-    .dup-color-8 { background-color: #fce4b3; }
 
 
     tbody{
