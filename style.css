@@ -238,7 +238,7 @@
   }
   
 
-  button, h2, a, div {
+  button, h2, a,div {
     display: none !important;
 
   }
