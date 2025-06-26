@@ -538,3 +538,6 @@ document.addEventListener('DOMContentLoaded', () => {
   XLSX.utils.book_append_sheet(nuevoLibro, nuevaHoja, hojaSeleccionada);
   XLSX.writeFile(nuevoLibro, nombreExportado, { bookType: "xlsx" });
 }
+
+
+
