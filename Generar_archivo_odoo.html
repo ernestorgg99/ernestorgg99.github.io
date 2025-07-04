@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Visor multiple</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin: 10px 0 30px; }
+    th, td { border: 1px solid #999; padding: 6px; text-align: left; }
+    h3 { margin-top: 40px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <img src="IMAGENES/aviprorca.png" alt="no cargo el logo">  
+  <h4>AVICOLA PRODUCCIÓN ORIENTE (AVIPRORCA), C.A. RIF J502623043 CONTROL DE ASISTENCIA	</h4>
+ <div></div>
+
+  <button onclick="window.location.href='index.html'">Inicio</button> 
+  <h2>Visualizador de múltiples archivos</h2>
+  <input type="file" id="input-multiple" accept=".xlsx" multiple />
+  <button onclick="agruparYMostrar()">Agrupar por Empleado</button>
+  <button onclick="exportarTabla()">Exportar a Excel</button>
+ <button onclick="window.location.href='Generar_archivo_odoo.html'">Limpiar</button>
+
+  <div id="contenedor-tablas"></div>
+  
+
+
+  <script src="agupar_suc_totalHE.js"></script>
+</body>
+</html>
