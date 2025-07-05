@@ -231,13 +231,14 @@ function mostrarMensaje(mensaje) {
   div.id = 'mensajeEmergente';
   div.style.cssText = `
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 400px;
+    right: 100px;
     background: #f1c40f;
     color: #222;
-    padding: 16px 24px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    padding: 100px 200px;
+    border-radius: 20px;
+    font-size: 25px;
+    box-shadow: 0 150px 250px rgba(0,0,0,0.2);
     z-index: 9999;
   `;
   div.innerHTML = `
