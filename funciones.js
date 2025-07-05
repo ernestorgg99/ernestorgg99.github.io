@@ -24,7 +24,7 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
       }
 
       const hoja = libro.Sheets[hojaNombre];
-      let datos = XLSX.utils.sheet_to_json(hoja, { header: 1 }).slice(5);
+      let datos = XLSX.utils.sheet_to_json(hoja, { header: 1 }).slice(4);
       datos = transformarDatos(datos);
       datosCombinados.push(...datos);
       callback();
