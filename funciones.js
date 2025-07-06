@@ -4,11 +4,12 @@ let workbook;
 
 document.getElementById('fileInput').addEventListener('change', (e) => {
   const archivos = Array.from(e.target.files);
-   datosCombinados = [];
+  datosCombinados = [];
 
   const procesarArchivo = (archivo, callback) => {
     nombreArchivoOriginal = archivo.name.split('.').slice(0, -1).join('.').split('-')[0].trim();
     const reader = new FileReader();
+
     reader.onload = function(event) {
       const data = new Uint8Array(event.target.result);
       const libro = XLSX.read(data, { type: 'array' });
@@ -24,11 +25,15 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
       }
 
       const hoja = libro.Sheets[hojaNombre];
-      let datos = XLSX.utils.sheet_to_json(hoja, { header: 1 }).slice(5);
-      datos = transformarDatos(datos);
-      datosCombinados.push(...datos);
+
+      // ✅ Aplicar slice dinámico según el índice de la hoja
+      const datosCrudos = XLSX.utils.sheet_to_json(hoja, { header: 1 });
+      const datos = hojaIndex === 2 ? datosCrudos.slice(5) : datosCrudos.slice(4);
+
+      datosCombinados.push(...transformarDatos(datos));
       callback();
     };
+
     reader.readAsArrayBuffer(archivo);
   };
 
@@ -141,17 +146,26 @@ function detectarYFormatearFecha(celda) {
 }
 
 function calcularHorasTrabajadas(entrada, salida) {
-  const normalizar = v => (v?.trim().toLowerCase() === 'falta' || v.trim() === '-' ? '-' : v.trim());
+  const normalizar = v => {
+    const valor = (v ?? '').toString().trim().toLowerCase();
+    return (valor === 'falta' || valor === '-') ? '-' : valor;
+  };
+
   entrada = normalizar(entrada);
   salida = normalizar(salida);
+
   if (entrada === '-' || salida === '-') return '-';
   if (!/^\d{2}:\d{2}$/.test(entrada) || !/^\d{2}:\d{2}$/.test(salida)) return '-';
+
   const [hEntrada, mEntrada] = entrada.split(':').map(Number);
   const [hSalida, mSalida] = salida.split(':').map(Number);
   const minutos = (hSalida * 60 + mSalida) - (hEntrada * 60 + mEntrada);
+
   if (minutos <= 0) return '00:00';
+
   const horas = Math.floor(minutos / 60);
   const minutosRestantes = minutos % 60;
+
   return `${horas.toString().padStart(2, '0')}:${minutosRestantes.toString().padStart(2, '0')}`;
 }
 
