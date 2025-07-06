@@ -176,7 +176,25 @@
   }
 
 
-   
+    th, td { border: 1px solid #999; padding: 6px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    thead { background: #007acc; color: white; }
+    .col-desde     { width: 50px; }
+    .col-a         { width: 50px; }
+    .col-duracion  { width: 50px; }
+    .col-estado    { width: 50px; }
+    .col-nombre    { width: 50px; }
+    .col-tipo      { width: 50px; }
+    .col-empleado  { width: 50px; }
+
+    /* Colores únicos para duplicados */
+    .dup-color-1 { background-color: #fff3cd; }
+    .dup-color-2 { background-color: #d4edda; }
+    .dup-color-3 { background-color: #d1ecf1; }
+    .dup-color-4 { background-color: #f8d7da; }
+    .dup-color-5 { background-color: #e2e3e5; }
+    .dup-color-6 { background-color: #fde2ff; }
+    .dup-color-7 { background-color: #e2f0cb; }
+    .dup-color-8 { background-color: #fce4b3; }
 
 
     tbody{
@@ -215,7 +233,6 @@
   
   #previewContainer {
     padding: 5px !important;
-    margin: 0 !important;
     margin: 0 !important;
     
   }
@@ -269,96 +286,15 @@
 
 
 img {
-  width: 100px;
-  height: auto;
   
-}
-
- h4 {
- text-align: center;  
-  color: #000000;
-  font-size: 10px;
-  margin: 0;
-}
-
-
-
-.contenedor-flex {
-  background-color: #90cdf4;
-  display: flex;
-  align-items: center;        /* Centra verticalmente */
-  justify-content: flex-start;/* O usa center, space-between, etc. */
-  gap: 20px;                  /* Espaciado entre elementos */
-  margin-top: 40px;           /* Separación superior */
-  padding: 10px;
-  flex-wrap: wrap;            /* Permite adaptación si no cabe en una línea */
-}
-
-.contenedor-flex img {
   width: 120px;
   height: auto;
 }
 
-.contenedor-flex h4 {
+ h4 {
+  margin-left: 1000px;
+  
   color: #000000;
   font-size: 1.2rem;
   margin: 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
- body {
-      font-family: sans-serif;
-      margin: 20px;
-    }
-    section#controls {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .flex-container {
-      display: flex;
-      gap: 16px;
-      margin-top: 20px;
-    }
-    .preview-box {
-      flex: 1;
-      border: 1px solid #ccc;
-      padding: 12px;
-      max-height: 60vh;
-      overflow: auto;
-    }
-    .preview-box h3 {
-      margin-top: 0;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 4px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    td, th {
-      border: 1px solid #999;
-      padding: 4px 8px;
-      text-align: left;
-      font-size: 0.9em;
-    }
-
-
-    body { font-family: sans-serif; margin:20px; }
-    #controls { margin-bottom:16px; }
-    button { padding:6px 12px; margin-right:8px; }
-
-
-
-
