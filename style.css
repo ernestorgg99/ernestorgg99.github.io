@@ -306,16 +306,6 @@ img {
 }
 
 
-
-
-
-
-
-
-
-
-
-
  body {
       font-family: sans-serif;
       margin: 20px;
@@ -358,7 +348,5 @@ img {
     body { font-family: sans-serif; margin:20px; }
     #controls { margin-bottom:16px; }
     button { padding:6px 12px; margin-right:8px; }
-
-
 
 
