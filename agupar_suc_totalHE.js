@@ -71,8 +71,7 @@ const HEADERS = ["Desde", "A", "Duración", "Estado", "Nombre", "Tipo de entrada
 
     const tbody = document.createElement("tbody");
     filas.forEach(row => {
-      const duracion = parseFloat(row["Duración"]) || 0;
-      if (duracion === 0) return;
+      
 
       const tr = document.createElement("tr");
       const clase = mapaDuplicados[row["Empleado"]];
@@ -140,8 +139,7 @@ const HEADERS = ["Desde", "A", "Duración", "Estado", "Nombre", "Tipo de entrada
 
       const tbody = document.createElement("tbody");
      agrupados.forEach(row => {
-  const duracion = parseFloat(row["Duración"]) || 0;
-  if (duracion === 0) return; // Filtrar duración cero
+  
 
   const tr = document.createElement("tr");
         HEADERS.forEach((h, i) => {
