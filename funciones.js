@@ -283,7 +283,7 @@ function agruparTabla() {
   const desde = limpiarHora(desdeObj);
   const hasta = limpiarHora(hastaObj);
 
-  const desdeFinal = `${desdeStr} 17:00:00`;
+  const desdeFinal = `${hastaStr} 17:01:00`;
   const hastaFinal = `${hastaStr} 23:59:00`;
 
   const filasDOM = document.querySelectorAll('#previewContainer table tr');
