@@ -55,27 +55,50 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
 
 function transformarDatos(datos) {
   const columnasOcultas = [0, 6, 7, 8, 9, 10, 11, 12];
+  const MAX_COLS = 13; // ajusta si tu hoja tiene más/menos columnas base
 
+  // Pad filas a ancho fijo
+  datos = datos.map(fila => {
+    const row = Array.from({ length: MAX_COLS }, (_, i) => {
+      const v = fila[i];
+      return v === undefined || v === null ? '' : v;
+    });
+    return row;
+  });
+
+  // Formateo de fecha en la columna correcta previa al filtrado
   datos = datos.map(fila => fila.map((celda, i) => {
     if (i === 3 && celda) return detectarYFormatearFecha(celda);
     return celda;
   }));
 
+  // Normalización y conversión de horas en columnas de tiempo crudas
   datos = datos.map(fila => fila.map((celda, i) => {
-    if ((i === 4 || i === 5) && celda) {
-      const texto = String(celda).replace(',', '.').trim();
+    if ((i === 4 || i === 5)) {
+      const texto = (celda ?? '').toString().replace(',', '.').trim();
+
+      // 1) Si está vacío o es "-", normalizar a "Falta" para evitar desplazamientos
+      if (texto === '' || texto === '-') {
+        return 'Falta';
+      }
+
+      // 2) Si es decimal tipo 0.5 (fracción del día), convertir a HH:MM
       const decimal = parseFloat(texto);
-      if (!isNaN(decimal) && texto.match(/^\d+(\.\d+)?$/)) {
+      if (!isNaN(decimal) && /^\d+(\.\d+)?$/.test(texto)) {
         const totalHoras = decimal * 24;
         const horas = Math.floor(totalHoras);
         const minutos = Math.round((totalHoras - horas) * 60);
         return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
       }
+
+      // 3) Si es "H:M" sin pad, normalizar a "HH:MM"
       if (/^\d{1,2}:\d{1,2}$/.test(texto)) {
         const [h, m] = texto.split(':').map(t => t.padStart(2, '0'));
         return `${h}:${m}`;
       }
     }
+
+    // Fecha en formato decimal mes.dia → DD/MM/YYYY
     if (i === 2 && celda) {
       const numero = parseFloat(String(celda).replace(',', '.'));
       if (!isNaN(numero)) {
@@ -85,13 +108,20 @@ function transformarDatos(datos) {
         return `${dia.toString().padStart(2, '0')}/${mes.toString().padStart(2, '0')}/${año}`;
       }
     }
+
     return celda;
   }));
 
+  // Filtrado de columnas por índice (ya seguro porque todas las filas tienen el mismo ancho)
   datos = datos.map(fila => fila.filter((_, i) => !columnasOcultas.includes(i)));
 
-  datos = datos.map(fila => fila.map(celda => celda === 'Falta' ? '-' : celda));
+  // Homogeneizar: "Falta" → "-" para que los cálculos y la visualización sean consistentes
+  datos = datos.map(fila => fila.map(celda => {
+    const v = (celda ?? '').toString().trim().toLowerCase();
+    return v === 'falta' ? '-' : celda;
+  }));
 
+  // Cálculos
   datos = datos.map(fila => {
     const entrada = fila[3];
     const salida = fila[4];
@@ -101,6 +131,7 @@ function transformarDatos(datos) {
     return [...fila, horasTrabajadas, estado, horasExtras];
   });
 
+  // Limpieza de ID (columna 0 tras el filtrado)
   datos = datos.map(fila => {
     const celda = fila[0];
     if (typeof celda === 'string') {
@@ -110,8 +141,8 @@ function transformarDatos(datos) {
     return fila;
   });
 
+  // Enriquecimiento con localStorage
   const base = JSON.parse(localStorage.getItem('datosSeleccionados'));
-  const columnasBase = base?.columnas || [];
   const filasBase = base?.filas || [];
   const mapaBase = new Map();
   filasBase.forEach(fila => mapaBase.set(fila[1], fila[0]));
@@ -122,6 +153,7 @@ function transformarDatos(datos) {
     return [...fila, valorCoincidente];
   });
 
+  // Filtrar filas totalmente ausentes
   datos = datos.filter(fila => !(fila[3]?.trim() === '-' && fila[4]?.trim() === '-'));
 
   return datos;
@@ -149,8 +181,8 @@ function calcularHorasTrabajadas(entrada, salida) {
   const normalizar = v => {
     const valor = (v ?? '').toString().trim().toLowerCase();
     return (valor === 'falta' || valor === '-') ? '-' : valor;
+    
   };
-
   entrada = normalizar(entrada);
   salida = normalizar(salida);
 
@@ -180,11 +212,14 @@ function determinarEstado(entrada, salida) {
 }
 
 function calcularHorasExtras(horasTrabajadas) {
-  if (!horasTrabajadas || horasTrabajadas === '-' || horasTrabajadas.toLowerCase() === 'falta') return '-';
-  if (!/^\d{2}:\d{2}$/.test(horasTrabajadas)) return '-';
-  const [h, m] = horasTrabajadas.split(':').map(Number);
+  if (!horasTrabajadas) return '-';
+  const v = horasTrabajadas.toString().trim().toLowerCase();
+  if (v === '-' || v === 'falta' || !/^\d{2}:\d{2}$/.test(v)) return '-';
+
+  const [h, m] = v.split(':').map(Number);
   const minutosExtras = (h * 60 + m) - (9 * 60);
   if (minutosExtras <= 0) return '0:00';
+
   const horas = Math.floor(minutosExtras / 60);
   const minutos = minutosExtras % 60;
   return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
