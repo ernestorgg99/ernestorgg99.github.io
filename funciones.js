@@ -37,20 +37,22 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
     reader.readAsArrayBuffer(archivo);
   };
 
-  const procesarTodos = (i = 0) => {
+   const procesarTodos = (i = 0) => {
     if (i >= archivos.length) {
       datosCombinados.sort((a, b) => {
-        const [d1, m1, y1] = (a[2] ?? '').split('/');
-        const [d2, m2, y2] = (b[2] ?? '').split('/');
+        // Usamos una expresión regular para dividir por '/' o '-'
+        const [d1, m1, y1] = (a[2] ?? '').split(/[\/\-]/);
+        const [d2, m2, y2] = (b[2] ?? '').split(/[\/\-]/);
+        
         return new Date(`${y1}-${m1}-${d1}`) - new Date(`${y2}-${m2}-${d2}`);
       });
       renderizarTabla(datosCombinados);
       return;
     }
     procesarArchivo(archivos[i], () => procesarTodos(i + 1));
-  };
+};
 
-  procesarTodos();
+procesarTodos();
 });
 
 function transformarDatos(datos) {
