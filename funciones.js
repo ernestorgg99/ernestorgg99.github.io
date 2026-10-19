@@ -1,6 +1,7 @@
 let hojaSeleccionada = "";
 let datosCombinados = [];
 let workbook;
+let nombreArchivoOriginal = "";
 
 document.getElementById('fileInput').addEventListener('change', (e) => {
   const archivos = Array.from(e.target.files);
@@ -40,9 +41,9 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
   const procesarTodos = (i = 0) => {
     if (i >= archivos.length) {
       datosCombinados.sort((a, b) => {
-        const [d1, m1, y1] = (a[2] ?? '').split('/');
-        const [d2, m2, y2] = (b[2] ?? '').split('/');
-        return new Date(`${y1}-${m1}-${d1}`) - new Date(`${y2}-${m2}-${d2}`);
+        const parsearFecha = (str) => parsearFechaCompleta(str) ?? new Date(0);
+
+        return parsearFecha(a[2]) - parsearFecha(b[2]);
       });
       renderizarTabla(datosCombinados);
       return;
@@ -100,6 +101,9 @@ function transformarDatos(datos) {
 
     // Fecha en formato decimal mes.dia → DD/MM/YYYY
     if (i === 2 && celda) {
+      if (esFecha(celda) || (typeof celda === 'number' && celda >= 32) || /\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{1,4}/.test(String(celda).trim())) {
+        return detectarYFormatearFecha(celda);
+      }
       const numero = parseFloat(String(celda).replace(',', '.'));
       if (!isNaN(numero)) {
         const mes = Math.floor(numero);
@@ -159,14 +163,50 @@ function transformarDatos(datos) {
   return datos;
 }
 
+function esFecha(valor) {
+  return Object.prototype.toString.call(valor) === '[object Date]';
+}
+
+function serialExcelAFecha(serial) {
+  const ms = Math.round((serial - 25569) * 86400 * 1000);
+  const fecha = new Date(ms);
+  if (isNaN(fecha.getTime())) return null;
+  return `${fecha.getUTCDate().toString().padStart(2, '0')}/${(fecha.getUTCMonth() + 1).toString().padStart(2, '0')}/${fecha.getUTCFullYear()}`;
+}
+
 function detectarYFormatearFecha(celda) {
-  if (typeof celda !== 'string') return celda;
-  const valor = celda.trim();
-  if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(valor)) {
-    const [dd, mm, yyyy] = valor.split('.');
-    return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+  if (esFecha(celda)) {
+    if (isNaN(celda.getTime())) return celda;
+    return `${celda.getDate().toString().padStart(2, '0')}/${(celda.getMonth() + 1).toString().padStart(2, '0')}/${celda.getFullYear()}`;
   }
-  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(valor)) return valor;
+  if (typeof celda === 'number' && Number.isInteger(celda) && celda >= 32) {
+    const formateada = serialExcelAFecha(celda);
+    if (formateada) return formateada;
+  }
+  if (typeof celda !== 'string' && typeof celda !== 'number') return celda;
+  let valor = String(celda).trim();
+
+  // Quitar hora si viene incluida (ej: "2026-10-18 17:01:00" o "18/10/2026 00:00:00")
+  const coincideFecha = valor.match(/\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{1,4}/);
+  if (coincideFecha) valor = coincideFecha[0];
+
+  const partes = valor.split(/[\/\-\.]/);
+
+  if (partes.length === 3) {
+    let [p1, p2, p3] = partes;
+
+    if (p1.length === 4) { // YYYY-MM-DD
+      const yyyy = p1;
+      const mm = p2.padStart(2, '0');
+      const dd = p3.padStart(2, '0');
+      return `${dd}/${mm}/${yyyy}`;
+    } else if (p3.length === 4) { // DD/MM/YYYY
+      const dd = p1.padStart(2, '0');
+      const mm = p2.padStart(2, '0');
+      const yyyy = p3;
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  }
   const decimal = parseFloat(valor.replace(',', '.'));
   if (!isNaN(decimal) && decimal < 13) {
     const mes = Math.floor(decimal);
@@ -175,6 +215,29 @@ function detectarYFormatearFecha(celda) {
     return `${dia.toString().padStart(2, '0')}/${mes.toString().padStart(2, '0')}/${año}`;
   }
   return celda;
+}
+
+function parsearFechaCompleta(str) {
+  let valor = String(str ?? '').trim();
+  const coincideFecha = valor.match(/\d{1,4}[\/\-.]\d{1,2}[\/\-.]\d{1,4}/);
+  if (coincideFecha) valor = coincideFecha[0];
+
+  const partes = valor.split(/[\/\-\.]/);
+  if (partes.length !== 3) return null;
+
+  let a, m, d;
+  if (partes[0].length === 4) {
+    a = partes[0]; m = partes[1]; d = partes[2];
+  } else if (partes[2].length === 4) {
+    d = partes[0]; m = partes[1]; a = partes[2];
+  } else {
+    return null;
+  }
+
+  const fecha = new Date(+a, +m - 1, +d);
+  if (isNaN(fecha.getTime())) return null;
+  if (fecha.getFullYear() !== +a || fecha.getMonth() !== +m - 1 || fecha.getDate() !== +d) return null;
+  return fecha;
 }
 
 function calcularHorasTrabajadas(entrada, salida) {
@@ -253,6 +316,8 @@ function construirFechaLocal(dateStr) {
 function filtrarPorRango() {
   const desdeStr = document.getElementById('fechaDesde').value;
   const hastaStr = document.getElementById('fechaHasta').value;
+  if (!desdeStr || !hastaStr) return;
+
   const desdeDate = new Date(desdeStr);
   const hastaDate = new Date(hastaStr);
 
@@ -268,8 +333,10 @@ function filtrarPorRango() {
     if (celdas.length === 0) return;
     const fechaTexto = celdas[2]?.innerText;
     if (!fechaTexto) return;
-    const [dia, mes, año] = fechaTexto.split('/');
-    const fechaFila = new Date(`${año}-${mes}-${dia}`);
+
+    const fechaFila = parsearFechaCompleta(fechaTexto);
+    if (!fechaFila) return;
+
     fila.style.display = (fechaFila >= desdeDate && fechaFila <= hastaDate) ? '' : 'none';
   });
 }
@@ -318,7 +385,7 @@ function agruparTabla() {
   const desde = limpiarHora(desdeObj);
   const hasta = limpiarHora(hastaObj);
 
-  const desdeFinal = `${hastaStr} 17:01:00`;
+  const desdeFinal = `${desdeStr} 17:01:00`;
   const hastaFinal = `${hastaStr} 23:59:00`;
 
   const filasDOM = document.querySelectorAll('#previewContainer table tr');
@@ -333,13 +400,11 @@ function agruparTabla() {
     const id = celdas[0]?.innerText.trim();
     const fechaTexto = celdas[2]?.innerText?.trim();
 
-    if (!id || !fechaTexto || !fechaTexto.includes('/')) return;
+    if (!id || !fechaTexto) return;
 
-    const partesFecha = fechaTexto.split('/');
-    if (partesFecha.length !== 3) return;
-
-    const [dd, mm, yyyy] = partesFecha;
-    const fechaObj = limpiarHora(new Date(`${yyyy}-${mm}-${dd}`));
+    const fechaBase = parsearFechaCompleta(fechaTexto);
+    if (!fechaBase) return;
+    const fechaObj = limpiarHora(fechaBase);
 
     // ✅ Comparar solo fechas, incluyendo el mismo día "desde" y "hasta"
     if (fechaObj < desde || fechaObj > hasta) return;
