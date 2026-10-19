@@ -40,9 +40,9 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
    const procesarTodos = (i = 0) => {
     if (i >= archivos.length) {
       datosCombinados.sort((a, b) => {
-        // Usamos una expresión regular para dividir por '/' o '-'
-        const [d1, m1, y1] = (a[2] ?? '').split(/[\/\-]/);
-        const [d2, m2, y2] = (b[2] ?? '').split(/[\/\-]/);
+        // Separamos usando '/' o '-'
+        const [y1, m1, d1] = (a[2] ?? '').split(/[\/\-]/);
+        const [y2, m2, d2] = (b[2] ?? '').split(/[\/\-]/);
         
         return new Date(`${y1}-${m1}-${d1}`) - new Date(`${y2}-${m2}-${d2}`);
       });
