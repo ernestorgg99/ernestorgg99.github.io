@@ -313,6 +313,10 @@ function construirFechaLocal(dateStr) {
   return new Date(parseInt(año), parseInt(mes) - 1, parseInt(día));
 }
 
+function fechaATextoISO(fecha) {
+  return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+}
+
 function filtrarPorRango() {
   const desdeStr = document.getElementById('fechaDesde').value;
   const hastaStr = document.getElementById('fechaHasta').value;
@@ -328,7 +332,8 @@ function filtrarPorRango() {
   }
 
   const filas = document.querySelectorAll('#previewContainer table tr');
-  filas.forEach((fila, index) => {
+  let visibles = 0;
+  filas.forEach((fila) => {
     const celdas = fila.querySelectorAll('td');
     if (celdas.length === 0) return;
     const fechaTexto = celdas[2]?.innerText;
@@ -337,8 +342,14 @@ function filtrarPorRango() {
     const fechaFila = parsearFechaCompleta(fechaTexto);
     if (!fechaFila) return;
 
-    fila.style.display = (fechaFila >= desdeDate && fechaFila <= hastaDate) ? '' : 'none';
+    const coincide = fechaATextoISO(fechaFila) >= desdeStr && fechaATextoISO(fechaFila) <= hastaStr;
+    fila.style.display = coincide ? '' : 'none';
+    if (coincide) visibles++;
   });
+
+  if (visibles === 0) {
+    mostrarMensaje("No hay filas dentro del rango seleccionado. Verificá las fechas del archivo y las del filtro.");
+  }
 }
 
 function mostrarMensaje(mensaje) {
@@ -373,9 +384,9 @@ function agruparTabla() {
     return;
   }
 
-  // Convertir fechas de entrada a objetos Date sin hora
-  const desde = construirFechaLocal(desdeStr);
-  const hasta = construirFechaLocal(hastaStr);
+  // Comparación por texto ISO (YYYY-MM-DD): sin problemas de zona horaria
+  const desdeISO = desdeStr;
+  const hastaISO = hastaStr;
 
   const desdeFinal = `${desdeStr} 17:01:00`;
   const hastaFinal = `${hastaStr} 23:59:00`;
@@ -396,10 +407,10 @@ function agruparTabla() {
 
     const fechaBase = parsearFechaCompleta(fechaTexto);
     if (!fechaBase) return;
-    const fechaObj = fechaBase;
+    const fechaObj = fechaATextoISO(fechaBase);
 
     // ✅ Comparar solo fechas, incluyendo el mismo día "desde" y "hasta"
-    if (fechaObj < desde || fechaObj > hasta) return;
+    if (fechaObj < desdeISO || fechaObj > hastaISO) return;
 
     if (!agrupados[id]) agrupados[id] = [];
     agrupados[id].push(celdas);
