@@ -318,8 +318,8 @@ function filtrarPorRango() {
   const hastaStr = document.getElementById('fechaHasta').value;
   if (!desdeStr || !hastaStr) return;
 
-  const desdeDate = new Date(desdeStr);
-  const hastaDate = new Date(hastaStr);
+  const desdeDate = construirFechaLocal(desdeStr);
+  const hastaDate = construirFechaLocal(hastaStr);
 
   const diffMs = hastaDate - desdeDate;
   const diffDays = diffMs / (1000 * 60 * 60 * 24) + 1;
@@ -374,16 +374,8 @@ function agruparTabla() {
   }
 
   // Convertir fechas de entrada a objetos Date sin hora
-  const desdeObj = new Date(desdeStr);
-  const hastaObj = new Date(hastaStr);
-
-  // Limpiar hora para comparar solo fechas
-  function limpiarHora(fecha) {
-    return new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
-  }
-
-  const desde = limpiarHora(desdeObj);
-  const hasta = limpiarHora(hastaObj);
+  const desde = construirFechaLocal(desdeStr);
+  const hasta = construirFechaLocal(hastaStr);
 
   const desdeFinal = `${desdeStr} 17:01:00`;
   const hastaFinal = `${hastaStr} 23:59:00`;
@@ -404,7 +396,7 @@ function agruparTabla() {
 
     const fechaBase = parsearFechaCompleta(fechaTexto);
     if (!fechaBase) return;
-    const fechaObj = limpiarHora(fechaBase);
+    const fechaObj = fechaBase;
 
     // ✅ Comparar solo fechas, incluyendo el mismo día "desde" y "hasta"
     if (fechaObj < desde || fechaObj > hasta) return;
