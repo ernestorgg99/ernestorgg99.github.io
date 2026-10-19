@@ -1,6 +1,7 @@
 let hojaSeleccionada = "";
 let datosCombinados = [];
 let workbook;
+let nombreArchivoOriginal = "";
 
 document.getElementById('fileInput').addEventListener('change', (e) => {
   const archivos = Array.from(e.target.files);
@@ -37,27 +38,32 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
     reader.readAsArrayBuffer(archivo);
   };
 
-   const procesarTodos = (i = 0) => {
+  const procesarTodos = (i = 0) => {
     if (i >= archivos.length) {
       datosCombinados.sort((a, b) => {
-        // Separamos usando '/' o '-'
-        const [y1, m1, d1] = (a[2] ?? '').split(/[\/\-]/);
-        const [y2, m2, d2] = (b[2] ?? '').split(/[\/\-]/);
-        
-        return new Date(`${y1}-${m1}-${d1}`) - new Date(`${y2}-${m2}-${d2}`);
+        const parsearFecha = (str) => {
+          const partes = (str ?? '').split(/[\/\-\.]/);
+          if (partes.length !== 3) return new Date(0);
+          if (partes[0].length === 4) {
+            return new Date(`${partes[0]}-${partes[1]}-${partes[2]}`);
+          }
+          return new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+        };
+
+        return parsearFecha(a[2]) - parsearFecha(b[2]);
       });
       renderizarTabla(datosCombinados);
       return;
     }
     procesarArchivo(archivos[i], () => procesarTodos(i + 1));
-};
+  };
 
-procesarTodos();
+  procesarTodos();
 });
 
 function transformarDatos(datos) {
   const columnasOcultas = [0, 6, 7, 8, 9, 10, 11, 12];
-  const MAX_COLS = 13; // ajusta si tu hoja tiene más/menos columnas base
+  const MAX_COLS = 13;
 
   // Pad filas a ancho fijo
   datos = datos.map(fila => {
@@ -79,12 +85,10 @@ function transformarDatos(datos) {
     if ((i === 4 || i === 5)) {
       const texto = (celda ?? '').toString().replace(',', '.').trim();
 
-      // 1) Si está vacío o es "-", normalizar a "Falta" para evitar desplazamientos
       if (texto === '' || texto === '-') {
         return 'Falta';
       }
 
-      // 2) Si es decimal tipo 0.5 (fracción del día), convertir a HH:MM
       const decimal = parseFloat(texto);
       if (!isNaN(decimal) && /^\d+(\.\d+)?$/.test(texto)) {
         const totalHoras = decimal * 24;
@@ -93,7 +97,6 @@ function transformarDatos(datos) {
         return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
       }
 
-      // 3) Si es "H:M" sin pad, normalizar a "HH:MM"
       if (/^\d{1,2}:\d{1,2}$/.test(texto)) {
         const [h, m] = texto.split(':').map(t => t.padStart(2, '0'));
         return `${h}:${m}`;
@@ -114,10 +117,10 @@ function transformarDatos(datos) {
     return celda;
   }));
 
-  // Filtrado de columnas por índice (ya seguro porque todas las filas tienen el mismo ancho)
+  // Filtrado de columnas por índice
   datos = datos.map(fila => fila.filter((_, i) => !columnasOcultas.includes(i)));
 
-  // Homogeneizar: "Falta" → "-" para que los cálculos y la visualización sean consistentes
+  // Homogeneizar: "Falta" → "-"
   datos = datos.map(fila => fila.map(celda => {
     const v = (celda ?? '').toString().trim().toLowerCase();
     return v === 'falta' ? '-' : celda;
@@ -133,7 +136,7 @@ function transformarDatos(datos) {
     return [...fila, horasTrabajadas, estado, horasExtras];
   });
 
-  // Limpieza de ID (columna 0 tras el filtrado)
+  // Limpieza de ID
   datos = datos.map(fila => {
     const celda = fila[0];
     if (typeof celda === 'string') {
@@ -162,13 +165,27 @@ function transformarDatos(datos) {
 }
 
 function detectarYFormatearFecha(celda) {
-  if (typeof celda !== 'string') return celda;
-  const valor = celda.trim();
-  if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(valor)) {
-    const [dd, mm, yyyy] = valor.split('.');
-    return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+  if (typeof celda !== 'string' && typeof celda !== 'number') return celda;
+  const valor = String(celda).trim();
+
+  const partes = valor.split(/[\/\-\.]/);
+
+  if (partes.length === 3) {
+    let [p1, p2, p3] = partes;
+
+    if (p1.length === 4) { // YYYY-MM-DD
+      const yyyy = p1;
+      const mm = p2.padStart(2, '0');
+      const dd = p3.padStart(2, '0');
+      return `${dd}/${mm}/${yyyy}`;
+    } else if (p3.length === 4) { // DD/MM/YYYY
+      const dd = p1.padStart(2, '0');
+      const mm = p2.padStart(2, '0');
+      const yyyy = p3;
+      return `${dd}/${mm}/${yyyy}`;
+    }
   }
-  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(valor)) return valor;
+
   const decimal = parseFloat(valor.replace(',', '.'));
   if (!isNaN(decimal) && decimal < 13) {
     const mes = Math.floor(decimal);
@@ -176,6 +193,7 @@ function detectarYFormatearFecha(celda) {
     const año = new Date().getFullYear();
     return `${dia.toString().padStart(2, '0')}/${mes.toString().padStart(2, '0')}/${año}`;
   }
+
   return celda;
 }
 
@@ -183,13 +201,12 @@ function calcularHorasTrabajadas(entrada, salida) {
   const normalizar = v => {
     const valor = (v ?? '').toString().trim().toLowerCase();
     return (valor === 'falta' || valor === '-') ? '-' : valor;
-    
   };
   entrada = normalizar(entrada);
   salida = normalizar(salida);
 
   if (entrada === '-' || salida === '-') return '-';
-  if (!/^\d{2}:\d{2}$/.test(entrada) || !/^\d{2}:\d{2}$/.test(salida)) return '-';
+  if (!/^\d{2}:\d{2}$/.test(entrada) \vert{}\vert{} !/^\d{2}:\d{2}$/.test(salida)) return '-';
 
   const [hEntrada, mEntrada] = entrada.split(':').map(Number);
   const [hSalida, mSalida] = salida.split(':').map(Number);
@@ -241,20 +258,16 @@ function renderizarTabla(datos) {
   contenedor.innerHTML = html;
 }
 
-// Filtrado automático por fecha
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('fechaDesde').addEventListener('change', filtrarPorRango);
   document.getElementById('fechaHasta').addEventListener('change', filtrarPorRango);
 });
 
-function construirFechaLocal(dateStr) {
-  const [año, mes, día] = dateStr.split('-');
-  return new Date(parseInt(año), parseInt(mes) - 1, parseInt(día));
-}
-
 function filtrarPorRango() {
   const desdeStr = document.getElementById('fechaDesde').value;
   const hastaStr = document.getElementById('fechaHasta').value;
+  if (!desdeStr || !hastaStr) return;
+
   const desdeDate = new Date(desdeStr);
   const hastaDate = new Date(hastaStr);
 
@@ -265,13 +278,22 @@ function filtrarPorRango() {
   }
 
   const filas = document.querySelectorAll('#previewContainer table tr');
-  filas.forEach((fila, index) => {
+  filas.forEach((fila) => {
     const celdas = fila.querySelectorAll('td');
     if (celdas.length === 0) return;
-    const fechaTexto = celdas[2]?.innerText;
+    const fechaTexto = celdas[2]?.innerText?.trim();
     if (!fechaTexto) return;
-    const [dia, mes, año] = fechaTexto.split('/');
-    const fechaFila = new Date(`${año}-${mes}-${dia}`);
+
+    const partes = fechaTexto.split(/[\/\-\.]/);
+    if (partes.length !== 3) return;
+
+    let fechaFila;
+    if (partes[0].length === 4) {
+      fechaFila = new Date(`${partes[0]}-${partes[1]}-${partes[2]}`);
+    } else {
+      fechaFila = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+    }
+
     fila.style.display = (fechaFila >= desdeDate && fechaFila <= hastaDate) ? '' : 'none';
   });
 }
@@ -308,11 +330,9 @@ function agruparTabla() {
     return;
   }
 
-  // Convertir fechas de entrada a objetos Date sin hora
   const desdeObj = new Date(desdeStr);
   const hastaObj = new Date(hastaStr);
 
-  // Limpiar hora para comparar solo fechas
   function limpiarHora(fecha) {
     return new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
   }
@@ -335,15 +355,18 @@ function agruparTabla() {
     const id = celdas[0]?.innerText.trim();
     const fechaTexto = celdas[2]?.innerText?.trim();
 
-    if (!id || !fechaTexto || !fechaTexto.includes('/')) return;
+    if (!id || !fechaTexto) return;
 
-    const partesFecha = fechaTexto.split('/');
+    const partesFecha = fechaTexto.split(/[\/\-\.]/);
     if (partesFecha.length !== 3) return;
 
-    const [dd, mm, yyyy] = partesFecha;
-    const fechaObj = limpiarHora(new Date(`${yyyy}-${mm}-${dd}`));
+    let fechaObj;
+    if (partesFecha[0].length === 4) {
+      fechaObj = limpiarHora(new Date(`${partesFecha[0]}-${partesFecha[1]}-${partesFecha[2]}`));
+    } else {
+      fechaObj = limpiarHora(new Date(`${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`));
+    }
 
-    // ✅ Comparar solo fechas, incluyendo el mismo día "desde" y "hasta"
     if (fechaObj < desde || fechaObj > hasta) return;
 
     if (!agrupados[id]) agrupados[id] = [];
@@ -363,7 +386,6 @@ function agruparTabla() {
       }
     });
 
-    // ✅ Aplicar límite si se exceden 600 minutos
     if (totalMin >= 600) {
       totalMin = 570;
     }
@@ -386,7 +408,6 @@ function agruparTabla() {
     ]);
   });
 
-  // Renderizar tabla resumen
   const contenedor = document.getElementById('previewContainer');
   let html = '<h3>Resumen agrupado:</h3><table><thead><tr>';
   const headers = ['Desde', 'A', 'Duración', 'Estado', 'Nombre', 'Tipo de entrada de trabajo', 'Empleado'];
