@@ -388,7 +388,7 @@ function agruparTabla() {
   const desdeISO = desdeStr;
   const hastaISO = hastaStr;
 
-  const desdeFinal = `${desdeStr} 17:01:00`;
+  const desdeFinal = `${hastaStr} 17:01:00`;
   const hastaFinal = `${hastaStr} 23:59:00`;
 
   const filasDOM = document.querySelectorAll('#previewContainer table tr');
